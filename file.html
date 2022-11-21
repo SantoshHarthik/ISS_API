@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS_API</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin=""></script>
+
+
+    <style>
+        #issmap {
+            height: 520px;
+        }
+
+        h1{
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            font-size:50px;
+        }
+
+        #tem{
+            height:200px;
+        }
+
+        p{
+            color: blueviolet;
+            font-weight: 900;
+        }
+
+    </style>
+
+
+</head>
+
+<body>
+    <h2>Where is the ISS now ?</h2>
+    <h3>This is the view from the ISS directly down to earth.</h3>
+
+    <p>
+        Latitude : <span id="lat" style="color:blue;font-weight:bold"></span><br>
+        Longitude : <span id="lon" style="color:blue;font-weight:bold"></span><br>
+        velocity : <spam id="vel" style="color:blue;font-weight:bold"></spam><br>
+        altitude : <span id="alt" style="color:blue;font-weight:bold"></span>
+    </p>
+    <br>
+
+    <div id="issmap"></div>
+    <div id="tem"></div>
+
+
+    <script>
+        const mymap = L.map('issmap').setView([0,0], 1);
+
+        const key = 'https://api.wheretheiss.at/v1/satellites/25544';
+        const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright"></a> ';
+
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const tiles = L.tileLayer(tileUrl,{ attribution });
+        tiles.addTo(mymap);
+
+        const myIcon = L.icon({
+            iconUrl: 'iss_pic.png',
+            iconSize: [40, 35],
+            iconAnchor: [22, 20]
+        });
+        const marker=L.marker([0,0] , {icon: myIcon}).addTo(mymap);
+        let first=true
+        async function fun() {
+            const response = await fetch(key);
+            const data = await response.json();
+            const {latitude,longitude,altitude,velocity}=data
+            marker.setLatLng([latitude,longitude])
+            if(first)
+            {
+                mymap.setView([latitude,longitude],5)
+                first=false
+            }
+            document.getElementById('lat').textContent= latitude.toFixed(2);
+            document.getElementById('vel').textContent=velocity.toFixed(2);
+            document.getElementById('lon').textContent= longitude.toFixed(2);
+            document.getElementById('alt').textContent=altitude.toFixed(2);
+        }
+        fun();
+        setInterval(fun,1000);
+
+
+    </script>
+</body>
+
+</html>
